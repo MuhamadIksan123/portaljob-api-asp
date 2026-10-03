@@ -1,29 +1,16 @@
 import { useState } from "react";
-import {
-  Button,
-  Card,
-  CardContent,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import AddIcon from "@mui/icons-material/Add";
+import { Link } from "react-router";
+import AppHeader from "../../app/layout/AppHeader";
+import type { Category } from "../../app/models/category";
 import {
   useCreateCategoryMutation,
   useDeleteCategoryMutation,
   useGetCategoriesQuery,
   useUpdateCategoryMutation,
 } from "./categoryApi";
-import type { Category } from "../../app/models/category";
 import { useNavigate } from "react-router";
 import { useLogoutMutation } from "../account/accountApi";
+import { toast } from "react-toastify";
 
 export default function CategoryPage() {
   const { data = [], isLoading } = useGetCategoriesQuery();
@@ -55,111 +42,226 @@ export default function CategoryPage() {
     form.append("Name", name);
     if (icon) form.append("Icon", icon);
 
-    if (editing) {
-      await updateCategory({ id: editing.id, body: form }).unwrap();
-    } else {
-      if (!icon) return;
-      await createCategory(form).unwrap();
-    }
+    try {
+      if (editing) {
+        await updateCategory({ id: editing.id, body: form }).unwrap();
+        toast.success("Category updated successfully.");
+      } else {
+        if (!icon) {
+          toast.error("Please select a category icon.");
+          return;
+        }
 
-    setOpen(false);
+        await createCategory(form).unwrap();
+        toast.success("Category created successfully.");
+      }
+
+      setOpen(false);
+    } catch (error) {
+      console.error("Category save failed:", error);
+      toast.error("Failed to save category.");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteCategory(id).unwrap();
+      toast.success("Category deleted successfully.");
+    } catch (error) {
+      console.error("Category delete failed:", error);
+      toast.error("Failed to delete category.");
+    }
   };
 
   const navigate = useNavigate();
-
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
 
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-
+      toast.success("Logged out successfully.");
       navigate("/login");
     } catch (error) {
       console.error(error);
+      toast.error("Logout failed.");
     }
   };
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 900, mx: "auto", p: 4 }}>
-      <Stack
-        direction="row"
-        spacing={2}
-        sx={{ justifyContent: "space-between", alignItems: "center" }}
-      >
-        <Typography variant="h4">Manage Categories</Typography>
-        <Button
-          startIcon={<AddIcon />}
-          variant="contained"
-          onClick={openCreate}
-        >
-          Add New
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-        >
-          {isLoggingOut ? "Logging Out..." : "Logout"}
-        </Button>
-      </Stack>
+    <div className="min-vh-100 bg-light" style={{ fontFamily: "Poppins, sans-serif" }}>
+      <AppHeader
+        title="Manage Categories"
+        actions={
+          <button
+            type="button"
+            className="btn btn-outline-dark rounded-pill"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? "Logging Out..." : "Logout"}
+          </button>
+        }
+      />
 
-      {isLoading && <Typography>Loading</Typography>}
+      <main className="py-5">
+        <div className="container" style={{ maxWidth: 1140 }}>
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 8 }}>
+            <div className="card-body p-4 p-lg-5">
+              <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <div>
+                  <h1 className="h3 mb-1 fw-bold" style={{ color: "#1e1b4b" }}>
+                    Manage Categories
+                  </h1>
+                  <p className="text-secondary mb-0">Kelola kategori pekerjaan.</p>
+                </div>
+                <button
+                  type="button"
+                  className="btn rounded-pill px-4 py-3 fw-bold text-white"
+                  style={{ backgroundColor: "#4338CA" }}
+                  onClick={openCreate}
+                >
+                  Add New
+                </button>
+              </div>
 
-      {data.map((category) => (
-        <Card key={category.id}>
-          <CardContent>
-            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-              <img
-                src={category.iconUrl}
-                alt={category.name}
-                width={80}
-                height={80}
-                style={{ objectFit: "cover", borderRadius: 16 }}
-              />
-              <Stack sx={{ flex: 1 }}>
-                <Typography variant="h6">{category.name}</Typography>
-                <Typography color="text.secondary">{category.slug}</Typography>
-              </Stack>
-              <IconButton onClick={() => openEdit(category)}>
-                <EditIcon />
-              </IconButton>
-              <IconButton onClick={() => deleteCategory(category.id)}>
-                <DeleteIcon />
-              </IconButton>
-            </Stack>
-          </CardContent>
-        </Card>
-      ))}
+              {isLoading && <div className="alert alert-light border">Loading...</div>}
 
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>{editing ? "Edit Category" : "New Category"}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label="Name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              fullWidth
-            />
-            <input
-              type="file"
-              accept=".jpg,.jpeg,.png"
-              onChange={(event) => setIcon(event.target.files?.[0] ?? null)}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={save}>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Stack>
+              {!isLoading && data.length === 0 && (
+                <div className="alert alert-light border mb-0">Data belum tersedia</div>
+              )}
+
+              <div className="d-flex flex-column gap-3">
+                {data.map((category) => (
+                  <div
+                    key={category.id}
+                    className="border-bottom pb-3"
+                    style={{ borderColor: "#e2e8f0" }}
+                  >
+                    <div className="row align-items-center g-3">
+                      <div className="col-12 col-md-6">
+                        <div className="d-flex align-items-center gap-3">
+                          <img
+                            src={category.iconUrl}
+                            alt={category.name}
+                            className="rounded-3 flex-shrink-0"
+                            width="90"
+                            height="90"
+                            style={{ objectFit: "cover" }}
+                          />
+                          <div>
+                            <h2 className="h5 mb-1 fw-bold" style={{ color: "#1e1b4b" }}>
+                              {category.name}
+                            </h2>
+                            <div className="small text-secondary">{category.slug}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-12 col-md-3">
+                        <div className="small text-secondary">Date</div>
+                        <div className="fw-bold" style={{ color: "#1e1b4b" }}>
+                          {new Date(category.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "2-digit",
+                            year: "numeric",
+                          })}
+                        </div>
+                      </div>
+                      <div className="col-12 col-md-3">
+                        <div className="d-flex flex-wrap justify-content-md-end gap-2">
+                          <button
+                            type="button"
+                            className="btn rounded-pill px-4 py-2 fw-bold text-white"
+                            style={{ backgroundColor: "#4338CA" }}
+                            onClick={() => openEdit(category)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="btn rounded-pill px-4 py-2 fw-bold text-white"
+                            style={{ backgroundColor: "#B91C1C" }}
+                            onClick={() => void handleDelete(category.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4">
+                <Link to="/" className="text-decoration-none">
+                  <span className="text-secondary small">Back to Home</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {open && (
+        <>
+          <div className="modal d-block" tabIndex={-1} role="dialog" aria-modal="true">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title fw-bold">
+                    {editing ? "Edit Category" : "New Category"}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={() => setOpen(false)}
+                  />
+                </div>
+                <div className="modal-body p-4">
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold" htmlFor="category-name">
+                      Name
+                    </label>
+                    <input
+                      id="category-name"
+                      type="text"
+                      className="form-control form-control-lg"
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label fw-semibold" htmlFor="category-icon">
+                      icon
+                    </label>
+                    <input
+                      id="category-icon"
+                      type="file"
+                      className="form-control"
+                      accept=".jpg,.jpeg,.png"
+                      onChange={(event) => setIcon(event.target.files?.[0] ?? null)}
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-light" onClick={() => setOpen(false)}>
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn rounded-pill px-4 fw-bold text-white"
+                    style={{ backgroundColor: "#4338CA" }}
+                    onClick={save}
+                  >
+                    {editing ? "Update Category" : "Add New Category"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop fade show" />
+        </>
+      )}
+    </div>
   );
 }
