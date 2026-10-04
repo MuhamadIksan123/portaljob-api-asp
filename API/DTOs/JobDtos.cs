@@ -25,6 +25,7 @@ public class JobSummaryDto
     public long Salary { get; set; }
 
     public bool IsOpen { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 
 public class JobDto : JobSummaryDto

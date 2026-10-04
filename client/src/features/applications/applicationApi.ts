@@ -5,7 +5,7 @@ import type { JobApplication } from "../../app/models/application";
 export const applicationApi = createApi({
   reducerPath: "applicationApi",
   baseQuery,
-  tagTypes: ["Application"],
+  tagTypes: ["Application", "Job"],
   endpoints: (builder) => ({
     apply: builder.mutation<JobApplication, { slug: string; body: FormData }>({
       query: ({ slug, body }) => ({
@@ -32,7 +32,13 @@ export const applicationApi = createApi({
         url: `applications/${id}/hire`,
         method: "PUT",
       }),
-      invalidatesTags: ["Application"],
+      invalidatesTags: ["Application", "Job"],
+    }),
+    getResume: builder.query<Blob, number>({
+      query: (id) => ({
+        url: `applications/${id}/resume`,
+        responseHandler: async (response) => response.blob(),
+      }),
     }),
   }),
 });

@@ -52,7 +52,8 @@ public class JobsController(
                 Salary = x.Salary,
                 ThumbnailUrl = x.ThumbnailUrl,
                 CompanyName = x.Company.Name,
-                CategoryName = x.Category.Name
+                CategoryName = x.Category.Name,
+                CreatedAt = x.CreatedAt,
             })
             .ToListAsync();
 
@@ -97,7 +98,8 @@ public class JobsController(
                 Salary = x.Salary,
                 ThumbnailUrl = x.ThumbnailUrl,
                 CompanyName = x.Company.Name,
-                CategoryName = x.Category.Name
+                CategoryName = x.Category.Name,
+                CreatedAt = x.CreatedAt,
             })
             .ToListAsync();
 
@@ -113,6 +115,7 @@ public class JobsController(
             ThumbnailUrl = job.ThumbnailUrl,
             About = job.About,
             IsOpen = job.IsOpen,
+            CreatedAt = job.CreatedAt,
 
             CompanyId = job.CompanyId,
             CompanyName = job.Company.Name,
@@ -159,7 +162,8 @@ public class JobsController(
                 Salary = x.Salary,
                 ThumbnailUrl = x.ThumbnailUrl,
                 CompanyName = x.Company.Name,
-                CategoryName = x.Category.Name
+                CategoryName = x.Category.Name,
+                CreatedAt = x.CreatedAt
             })
             .ToListAsync();
 

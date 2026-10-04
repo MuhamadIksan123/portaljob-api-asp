@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import AppHeader from "../../app/layout/AppHeader";
 import { useGetCompaniesQuery } from "../company/companyApi";
 import { useGetCategoriesQuery } from "../categories/categoryApi";
 import {
@@ -75,10 +74,6 @@ export default function ManageJobsPage() {
       className="min-vh-100 bg-light"
       style={{ fontFamily: "Poppins, sans-serif" }}
     >
-      <AppHeader
-        title={editingId === null ? "New Job Listing" : "Edit Job Listing"}
-      />
-
       <main className="py-5">
         <div className="container" style={{ maxWidth: 1140 }}>
           <div

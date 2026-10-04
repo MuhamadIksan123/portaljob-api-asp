@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import PublicHeader from "../../app/layout/PublicHeader";
 import { useApplyMutation } from "./applicationApi";
 import { toast } from "react-toastify";
+import { useGetJobQuery } from "../job/jobApi";
+import { formatDate } from "../../lib/utils";
 
 export default function ApplyJobPage() {
   const { slug = "" } = useParams();
+  const { data: job } = useGetJobQuery(slug);
   const [message, setMessage] = useState("");
   const [resume, setResume] = useState<File | null>(null);
   const [apply, { isLoading }] = useApplyMutation();
@@ -32,125 +34,206 @@ export default function ApplyJobPage() {
   };
 
   return (
-    <main
-      className="min-vh-100 pb-5 overflow-x-hidden"
-      style={{ fontFamily: "Poppins, sans-serif", color: "#0E0140" }}
-    >
-      <div
-        className="position-absolute top-0 start-0 w-100 overflow-hidden"
-        style={{ height: 533, zIndex: -1 }}
-      >
-        <img
-          src="/assets/backgrounds/Group 2009.png"
-          alt="background"
-          className="w-100 h-100"
-          style={{ objectFit: "fill" }}
-        />
-      </div>
-      <PublicHeader />
-
-      <form
-        className="container position-relative bg-white border shadow-sm p-4 p-lg-5 mt-5"
-        style={{ maxWidth: 900, borderColor: "#E8E4F8", borderRadius: 20 }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          void submit();
+    <>
+      <main
+        className="min-vh-100 pb-5 position-relative overflow-x-hidden"
+        style={{
+          fontFamily: "Poppins, sans-serif",
+          backgroundColor: "#0B0436",
         }}
       >
-        <div className="position-absolute top-0 start-0 translate-middle-y ms-5">
-          <div
-            className="bg-white border shadow-sm rounded-4 d-flex align-items-center justify-content-center p-3"
-            style={{ width: 120, height: 120, borderColor: "#E8E4F8" }}
-          >
-            <img
-              src="/assets/logos/Logo-black.svg"
-              alt="logo"
-              className="img-fluid"
-            />
-          </div>
+        <div
+          className="position-absolute top-0 start-0 w-100 overflow-hidden"
+          style={{ height: 1330, zIndex: 0, pointerEvents: "none" }}
+        >
+          <img
+            src="/assets/backgrounds/Group 2009.png"
+            alt=""
+            className="w-100 h-100"
+            style={{ objectFit: "fill" }}
+          />
         </div>
 
-        <div className="pt-5 mt-3">
-          <span
-            className="badge rounded-pill px-3 py-2 fw-bold mb-3"
-            style={{ backgroundColor: "#7521FF" }}
+        <div className="container position-relative my-5" style={{ zIndex: 1 }}>
+          <form
+            className="apply-card mx-auto col-lg-8 bg-white shadow-lg p-4 p-lg-5 mt-5 text-dark"
+            style={{ borderRadius: 32 }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              void submit();
+            }}
           >
-            WE’RE HIRING!
-          </span>
-          <h1 className="fw-bold" style={{ fontSize: 32, lineHeight: "48px" }}>
-            Apply Job
-          </h1>
-          <p className="text-secondary mb-0">Job reference: {slug}</p>
-        </div>
-
-        <div className="mt-5">
-          <h2 className="h5 fw-semibold mb-3">Write Best Cover Letter</h2>
-          <div className="input-group">
-            <span className="input-group-text bg-white align-items-start pt-3 border-end-0 rounded-start-4">
+            {/* Floating Company Logo */}
+            <div
+              className="position-relative bg-white shadow d-flex align-items-center justify-content-center mb-3"
+              style={{
+                width: 110,
+                height: 110,
+                top: -85,
+                left: 20,
+                borderRadius: 24,
+                border: "1px solid #eee",
+              }}
+            >
               <img
-                src="/assets/icons/award.svg"
-                alt="icon"
-                width="24"
-                height="24"
+                src={job?.thumbnailUrl || "/assets/logos/Logo-black.svg"}
+                style={{
+                  maxWidth: "70%",
+                  maxHeight: "70%",
+                  objectFit: "contain",
+                }}
+                alt="Company Logo"
               />
-            </span>
-            <textarea
-              className="form-control border-start-0 rounded-end-4 shadow-none"
-              rows={9}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Tell your great skills and experiences"
-              required
-            />
-          </div>
-        </div>
+            </div>
 
-        <div className="mt-4">
-          <h2 className="h5 fw-semibold mb-3">Complete Your Profile</h2>
-          <div className="input-group">
-            <span className="input-group-text bg-white border-end-0 rounded-start-4">
-              <img
-                src="/assets/icons/brifecase-tick.svg"
-                alt="icon"
-                width="24"
-                height="24"
+            <div style={{ marginTop: "-50px" }}>
+              <span
+                className="badge mb-3 text-white px-3 py-2 fw-semibold"
+                style={{
+                  backgroundColor: "#7B3FE4",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                }}
+              >
+                {job?.isOpen !== false ? "WE'RE HIRING!" : "CLOSED"}
+              </span>
+
+              <h2
+                className="fw-bold mb-1"
+                style={{ fontSize: "32px", color: "#0C0039" }}
+              >
+                {job ? job.name : "Apply Job"}
+              </h2>
+              <p className="text-muted" style={{ fontSize: "14px" }}>
+                {job
+                  ? `${job.categoryName} • Posted at ${formatDate(job.createdAt ?? undefined)}`
+                  : `Job reference: ${slug}`}
+              </p>
+
+              {/* Job Metadata Badges (without border-top/border-bottom lines) */}
+              {job && (
+                <div className="d-flex flex-wrap gap-4 my-4 fw-semibold justify-content-between py-2">
+                  <div className="d-flex align-items-center gap-2">
+                    <img
+                      src="/assets/icons/note-favorite-orange.svg"
+                      width="24"
+                      height="24"
+                      alt=""
+                    />
+                    <span style={{ fontSize: "14px", color: "#333" }}>
+                      {job.type}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <img
+                      src="/assets/icons/personalcard-yellow.svg"
+                      width="24"
+                      height="24"
+                      alt=""
+                    />
+                    <span style={{ fontSize: "14px", color: "#333" }}>
+                      {job.skillLevel}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <img
+                      src="/assets/icons/moneys-cyan.svg"
+                      width="24"
+                      height="24"
+                      alt=""
+                    />
+                    <span style={{ fontSize: "14px", color: "#333" }}>
+                      Rp {job.salary.toLocaleString("id-ID")} /mo
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <img
+                      src="/assets/icons/location-purple.svg"
+                      width="24"
+                      height="24"
+                      alt=""
+                    />
+                    <span style={{ fontSize: "14px", color: "#333" }}>
+                      {job.location}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <label
+                className="fw-bold fs-5 mb-2 d-flex align-items-center gap-2"
+                htmlFor="cover-letter"
+                style={{ color: "#0C0039", fontSize: "18px" }}
+              >
+                <img src="/assets/icons/award.svg" width="20" alt="" />
+                Write Best Cover Letter
+              </label>
+              <textarea
+                id="cover-letter"
+                className="form-control"
+                style={{
+                  borderRadius: 16,
+                  border: "1.5px solid #E2E8F0",
+                  padding: "16px 20px",
+                  fontSize: "14px",
+                }}
+                rows={6}
+                placeholder="Tell your great skills and experiences"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                required
               />
-            </span>
-            <input
-              type="file"
-              className="form-control border-start-0 rounded-end-4 shadow-none"
-              accept="application/pdf"
-              onChange={(e) => setResume(e.target.files?.[0] ?? null)}
-              required
-            />
-          </div>
-          <div className="form-text">PDF resume only.</div>
-        </div>
+            </div>
 
-        <hr className="my-5" style={{ borderColor: "#E8E4F8" }} />
+            <div className="mt-4">
+              <label
+                className="fw-bold fs-5 mb-2 d-flex align-items-center gap-2"
+                htmlFor="uploadBox"
+                style={{ color: "#0C0039", fontSize: "18px" }}
+              >
+                <img src="/assets/icons/brifecase-tick.svg" width="20" alt="" />
+                Complete Your Profile
+              </label>
+              <input
+                id="uploadBox"
+                type="file"
+                className="form-control"
+                style={{
+                  borderRadius: 16,
+                  border: "1.5px solid #E2E8F0",
+                  padding: "16px 20px",
+                  fontSize: "14px",
+                }}
+                accept=".pdf,application/pdf"
+                onChange={(e) => setResume(e.target.files?.[0] ?? null)}
+                required
+              />
+              <div className="form-text text-muted">PDF resume only.</div>
+            </div>
 
-        <div className="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-          <div className="d-flex align-items-center gap-2">
-            <img
-              src="/assets/icons/security-user.svg"
-              alt="icon"
-              width="24"
-              height="24"
-            />
-            <span className="fw-semibold">
-              We use Angga to secure your data 100%
-            </span>
-          </div>
-          <button
-            type="submit"
-            className="btn rounded-pill px-4 py-3 text-white fw-semibold"
-            style={{ backgroundColor: "#FF6B2C" }}
-            disabled={isLoading || !resume || !message.trim()}
-          >
-            {isLoading ? "Submitting..." : "Submit My Application"}
-          </button>
+            <hr className="my-4" />
+
+            <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+              <div className="d-flex align-items-center gap-2">
+                <img src="/assets/icons/security-user.svg" width="20" alt="" />
+                <small className="fw-semibold text-muted">
+                  We secure your data 100%
+                </small>
+              </div>
+              <button
+                type="submit"
+                className="btn text-white rounded-pill px-5 py-3 fw-semibold shadow-sm"
+                style={{ backgroundColor: "#FF6B35", fontSize: "14px" }}
+                disabled={isLoading || !resume || !message.trim()}
+              >
+                {isLoading ? "Submitting..." : "Apply Now"}
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
-    </main>
+      </main>
+    </>
   );
 }

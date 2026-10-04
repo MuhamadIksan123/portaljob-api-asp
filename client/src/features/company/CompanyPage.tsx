@@ -1,5 +1,4 @@
 import { useState } from "react";
-import AppHeader from "../../app/layout/AppHeader";
 import {
   useCreateCompanyMutation,
   useGetCompaniesQuery,
@@ -48,8 +47,10 @@ export default function CompanyPage() {
 
   if (isLoading) {
     return (
-      <div className="min-vh-100 bg-light" style={{ fontFamily: "Poppins, sans-serif" }}>
-        <AppHeader title="My Company" />
+      <div
+        className="min-vh-100 bg-light"
+        style={{ fontFamily: "Poppins, sans-serif" }}
+      >
         <main className="py-5">
           <div className="container" style={{ maxWidth: 1140 }}>
             <div className="alert alert-light border">Loading...</div>
@@ -60,8 +61,10 @@ export default function CompanyPage() {
   }
 
   return (
-    <div className="min-vh-100 bg-light" style={{ fontFamily: "Poppins, sans-serif" }}>
-      <AppHeader title="My Company" />
+    <div
+      className="min-vh-100 bg-light"
+      style={{ fontFamily: "Poppins, sans-serif" }}
+    >
       <main className="py-5">
         <div className="container" style={{ maxWidth: 1140 }}>
           <div className="card border-0 shadow-sm" style={{ borderRadius: 8 }}>
@@ -82,11 +85,18 @@ export default function CompanyPage() {
                       className="rounded-3 bg-light d-flex align-items-center justify-content-center"
                       style={{ width: 90, height: 90 }}
                     >
-                      <img src="/assets/logos/Logo-black.svg" alt="logo" style={{ width: 60 }} />
+                      <img
+                        src="/assets/logos/Logo-black.svg"
+                        alt="logo"
+                        style={{ width: 60 }}
+                      />
                     </div>
                   )}
                   <div>
-                    <h1 className="h4 fw-bold mb-1" style={{ color: "#1e1b4b" }}>
+                    <h1
+                      className="h4 fw-bold mb-1"
+                      style={{ color: "#1e1b4b" }}
+                    >
                       {company?.name || "New Company"}
                     </h1>
                     <p className="text-secondary mb-0">My Company</p>
@@ -102,7 +112,12 @@ export default function CompanyPage() {
                 }}
               >
                 <div>
-                  <label className="form-label fw-semibold" htmlFor="company-name">Name</label>
+                  <label
+                    className="form-label fw-semibold"
+                    htmlFor="company-name"
+                  >
+                    Name
+                  </label>
                   <input
                     id="company-name"
                     type="text"
@@ -113,7 +128,12 @@ export default function CompanyPage() {
                 </div>
 
                 <div>
-                  <label className="form-label fw-semibold" htmlFor="company-about">about</label>
+                  <label
+                    className="form-label fw-semibold"
+                    htmlFor="company-about"
+                  >
+                    about
+                  </label>
                   <textarea
                     id="company-about"
                     className="form-control"
@@ -124,7 +144,12 @@ export default function CompanyPage() {
                 </div>
 
                 <div>
-                  <label className="form-label fw-semibold" htmlFor="company-logo">logo</label>
+                  <label
+                    className="form-label fw-semibold"
+                    htmlFor="company-logo"
+                  >
+                    logo
+                  </label>
                   <input
                     id="company-logo"
                     type="file"
@@ -151,7 +176,9 @@ export default function CompanyPage() {
 
               {company?.about && (
                 <div className="border-top mt-5 pt-4">
-                  <h2 className="h5 fw-bold" style={{ color: "#1e1b4b" }}>About</h2>
+                  <h2 className="h5 fw-bold" style={{ color: "#1e1b4b" }}>
+                    About
+                  </h2>
                   <p className="mb-0">{company.about}</p>
                 </div>
               )}

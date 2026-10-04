@@ -12,6 +12,8 @@ public class StoreContext(DbContextOptions<StoreContext> options) : IdentityDbCo
     public DbSet<JobResponsibility> JobResponsibilities => Set<JobResponsibility>();
     public DbSet<JobQualification> JobQualifications => Set<JobQualification>();
     public DbSet<JobCandidate> JobCandidates => Set<JobCandidate>();
+    public DbSet<Bookmark> Bookmarks => Set<Bookmark>();
+    public DbSet<Contact> Contacts => Set<Contact>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -69,5 +71,27 @@ public class StoreContext(DbContextOptions<StoreContext> options) : IdentityDbCo
             .WithMany()
             .HasForeignKey(x => x.CompanyJobId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Bookmark>()
+            .HasIndex(x => new { x.UserId, x.JobId })
+            .IsUnique();
+
+        builder.Entity<Bookmark>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Bookmark>()
+            .HasOne(x => x.Job)
+            .WithMany()
+            .HasForeignKey(x => x.JobId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Bookmark>()
+            .HasOne(b => b.Job)
+            .WithMany()
+            .HasForeignKey(b => b.JobId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

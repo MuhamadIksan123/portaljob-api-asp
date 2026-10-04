@@ -1,308 +1,384 @@
 import { Link, useParams } from "react-router";
-import PublicHeader from "../../app/layout/PublicHeader";
 import { useGetJobQuery } from "./jobApi";
+import {
+  useGetBookmarksQuery,
+  useAddBookmarkMutation,
+  useDeleteBookmarkMutation,
+} from "../bookmarks/bookmarkApi";
+import { toast } from "react-toastify";
+import JobCard from "./JobCard";
+import { formatDate } from "../../lib/utils";
 
 export default function JobDetailPage() {
   const { slug = "" } = useParams();
   const { data: job, isLoading } = useGetJobQuery(slug);
 
+  // 1. Ambil data list bookmark & mutasi
+  const { data: bookmarks = [] } = useGetBookmarksQuery();
+  const [addBookmark, { isLoading: isAdding }] = useAddBookmarkMutation();
+  const [deleteBookmark, { isLoading: isDeleting }] =
+    useDeleteBookmarkMutation();
+
+  // 2. Cek apakah job saat ini sudah dibookmark
+  const isBookmarked = job ? bookmarks.some((b) => b.jobId === job.id) : false;
+
+  // 3. Handler toggle simpan / hapus bookmark
+  const handleToggleBookmark = async () => {
+    if (!job) {
+      toast.error("Job not found.");
+      return;
+    }
+
+    try {
+      if (isBookmarked) {
+        await deleteBookmark(job.id).unwrap();
+        toast.info("Removed from bookmarks.");
+      } else {
+        await addBookmark(job.id).unwrap();
+        toast.success("Job bookmarked.");
+      }
+    } catch {
+      toast.error("Failed to update bookmark.");
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center">
-        Loading...
+      <div
+        className="min-vh-100 d-flex align-items-center justify-content-center"
+        style={{ backgroundColor: "#0B0436" }}
+      >
+        <span className="text-white">Loading...</span>
       </div>
     );
   }
 
   if (!job) {
     return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center">
-        Job not found.
+      <div
+        className="min-vh-100 d-flex align-items-center justify-content-center"
+        style={{ backgroundColor: "#0B0436" }}
+      >
+        <span className="text-white">Job not found.</span>
       </div>
     );
   }
 
   return (
-    <main
-      className="min-vh-100 pb-5 overflow-x-hidden"
-      style={{ fontFamily: "Poppins, sans-serif", color: "#0E0140" }}
-    >
-      <div
-        className="position-absolute top-0 start-0 w-100 overflow-hidden"
-        style={{ height: 533, zIndex: -1 }}
+    <>
+      <main
+        className="min-vh-100 pb-5 position-relative overflow-x-hidden"
+        style={{
+          fontFamily: "Poppins, sans-serif",
+          backgroundColor: "#0B0436",
+        }}
       >
-        <img
-          src="/assets/backgrounds/Group 2009.png"
-          alt="background"
-          className="w-100 h-100"
-          style={{ objectFit: "fill" }}
-        />
-      </div>
+        {/* Background illustration */}
+        <div
+          className="position-absolute top-0 start-0 w-100 overflow-hidden"
+          style={{ height: 1330, zIndex: 0, pointerEvents: "none" }}
+        >
+          <img
+            src="/assets/backgrounds/Group 2009.png"
+            alt=""
+            className="w-100 h-100"
+            style={{ objectFit: "fill" }}
+          />
+        </div>
 
-      <PublicHeader />
-
-      <article
-        className="container bg-white border shadow-sm p-4 p-lg-5 mt-5"
-        style={{ maxWidth: 900, borderColor: "#E8E4F8", borderRadius: 20 }}
-      >
-        <div className="position-relative">
-          <div
-            className="w-100 overflow-hidden"
-            style={{
-              aspectRatio: "840 / 300",
-              backgroundColor: "#D9D9D9",
-              borderRadius: 20,
-            }}
-          >
-            <img
-              src={job.thumbnailUrl}
-              alt="cover image"
-              className="w-100 h-100"
-              style={{ objectFit: "cover" }}
-            />
-          </div>
-          <div className="position-absolute bottom-0 start-0 translate-middle-y ms-4">
+        {/* Main Job Detail Content */}
+        <section
+          className="container my-5 position-relative"
+          style={{ zIndex: 1 }}
+        >
+          <div className="mx-auto" style={{ maxWidth: 850 }}>
             <div
-              className="d-flex align-items-center justify-content-center bg-white border shadow-sm p-3"
-              style={{
-                width: 120,
-                height: 120,
-                borderColor: "#E8E4F8",
-                borderRadius: 20,
-              }}
+              className="bg-white shadow-lg overflow-hidden text-dark"
+              style={{ borderRadius: 32 }}
             >
-              <img
-                src="/assets/logos/Logo-black.svg"
-                alt="logo"
-                className="img-fluid"
-              />
-            </div>
-          </div>
-          <div className="position-absolute bottom-0 end-0 translate-middle-y me-4">
-            <span
-              className="badge rounded-pill px-3 py-2 fw-bold"
-              style={{
-                backgroundColor: job.isOpen ? "#7521FF" : "#FF2C39",
-                color: "#fff",
-                fontSize: "1rem",
-              }}
-            >
-              {job.isOpen ? "WE’RE HIRING!" : "CLOSED"}
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-5 pt-5">
-          <h1
-            className="fw-bold mb-2"
-            style={{ fontSize: 32, lineHeight: "48px" }}
-          >
-            {job.name}
-          </h1>
-          <p className="mb-0">{job.categoryName} • Job Portal</p>
-        </div>
-
-        <div className="row g-4 mt-4">
-          <div className="col-12 col-sm-6 col-lg-3 d-flex align-items-center gap-2">
-            <img
-              src="/assets/icons/note-favorite-orange.svg"
-              alt="icon"
-              width="38"
-              height="38"
-            />
-            <span className="fw-semibold fs-5">{job.type}</span>
-          </div>
-          <div className="col-12 col-sm-6 col-lg-3 d-flex align-items-center gap-2">
-            <img
-              src="/assets/icons/personalcard-yellow.svg"
-              alt="icon"
-              width="38"
-              height="38"
-            />
-            <span className="fw-semibold fs-5">{job.skillLevel}</span>
-          </div>
-          <div className="col-12 col-sm-6 col-lg-3 d-flex align-items-center gap-2">
-            <img
-              src="/assets/icons/moneys-cyan.svg"
-              alt="icon"
-              width="38"
-              height="38"
-            />
-            <span className="fw-semibold fs-5">
-              Rp {job.salary.toLocaleString("id-ID")}/mo
-            </span>
-          </div>
-          <div className="col-12 col-sm-6 col-lg-3 d-flex align-items-center gap-2">
-            <img
-              src="/assets/icons/location-purple.svg"
-              alt="icon"
-              width="38"
-              height="38"
-            />
-            <span className="fw-semibold fs-5">{job.location}</span>
-          </div>
-        </div>
-
-        <div className="mt-5">
-          <h2 className="h5 fw-semibold">Overview</h2>
-          <p className="fs-5 mb-0" style={{ lineHeight: "34px" }}>
-            {job.about}
-          </p>
-        </div>
-
-        <div className="mt-5">
-          <h2 className="h5 fw-semibold">Responsibilities</h2>
-          <div className="d-flex flex-column gap-3 mt-3">
-            {job.responsibilities.map((item) => (
-              <div key={item} className="d-flex align-items-start gap-2">
+              <div className="p-4 pb-0">
                 <img
-                  src="/assets/icons/tick-circle.svg"
-                  alt="tick icon"
-                  width="24"
-                  height="24"
-                  className="mt-1"
-                />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-5">
-          <h2 className="h5 fw-semibold">Qualifications</h2>
-          <div className="d-flex flex-column gap-3 mt-3">
-            {job.qualifications.map((item) => (
-              <div key={item} className="d-flex align-items-start gap-2">
-                <img
-                  src="/assets/icons/tick-circle.svg"
-                  alt="tick icon"
-                  width="24"
-                  height="24"
-                  className="mt-1"
-                />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-5">
-          <h2 className="h5 fw-semibold">Company</h2>
-          <div className="d-flex align-items-center gap-3 mt-3">
-            <div
-              className="d-flex align-items-center justify-content-center"
-              style={{ width: 70, height: 70 }}
-            >
-              <img
-                src="/assets/logos/Logo-black.svg"
-                alt="icon"
-                className="img-fluid"
-              />
-            </div>
-            <div>
-              <div className="d-flex align-items-center gap-2">
-                <span className="fw-semibold">{job.companyName}</span>
-                <img
-                  src="/assets/icons/verify.svg"
-                  alt="verified"
-                  width="24"
-                  height="24"
+                  src={
+                    job.thumbnailUrl ||
+                    "/assets/backgrounds/hero illustration v2.png"
+                  }
+                  className="w-100"
+                  style={{ height: 320, objectFit: "cover", borderRadius: 24 }}
+                  alt={job.name}
                 />
               </div>
-              <span className="small">Company jobs</span>
-            </div>
-          </div>
-        </div>
 
-        <hr className="my-5" style={{ borderColor: "#E8E4F8" }} />
+              <div className="p-4 p-lg-5">
+                <span
+                  className="badge mb-3 text-white px-3 py-2 fw-semibold"
+                  style={{
+                    backgroundColor: "#7B3FE4",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {job.isOpen ? "WE'RE HIRING!" : "CLOSED"}
+                </span>
 
-        <div className="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-          <div className="d-flex align-items-center gap-2">
-            <img
-              src="/assets/icons/security-user.svg"
-              alt="icon"
-              width="24"
-              height="24"
-            />
-            <span className="fw-semibold">
-              We use Angga to secure your data 100%
-            </span>
-          </div>
-          <div className="d-flex align-items-center gap-2">
-            <button
-              type="button"
-              className="btn rounded-pill px-4 py-2"
-              style={{ border: "1px solid #0E0140", color: "#0E0140" }}
-            >
-              Bookmark
-            </button>
-            {job.isOpen && (
-              <Link
-                to={`/jobs/${job.slug}/apply`}
-                className="btn rounded-pill px-4 py-2 text-white fw-semibold"
-                style={{ backgroundColor: "#FF6B2C" }}
-              >
-                Apply Now
-              </Link>
-            )}
-          </div>
-        </div>
-      </article>
+                <h2
+                  className="fw-bold mb-1"
+                  style={{ fontSize: "32px", color: "#0C0039" }}
+                >
+                  {job.name}
+                </h2>
+                <p className="text-muted" style={{ fontSize: "14px" }}>
+                  {job.categoryName} • Posted at{" "}
+                  {formatDate(job.createdAt ?? undefined)}
+                </p>
 
-      {job.relatedJobs.length > 0 && (
-        <section className="container mt-5 pt-3" style={{ maxWidth: 1130 }}>
-          <h2 className="fw-bold fs-3 mb-4">
-            Other Jobs You
-            <br />
-            Might Interested
-          </h2>
-          <div className="d-flex gap-3 overflow-auto pb-3">
-            {job.relatedJobs.map((item) => (
-              <div
-                key={item.id}
-                className="card flex-shrink-0 border shadow-sm"
-                style={{ width: 300, borderColor: "#E8E4F8", borderRadius: 20 }}
-              >
-                <div className="card-body p-4 d-flex flex-column gap-3">
-                  <div className="d-flex align-items-center gap-3">
+                {/* Metadata info */}
+                <div className="d-flex flex-wrap gap-4 my-4 fw-semibold justify-content-between py-2">
+                  <div className="d-flex align-items-center gap-2">
                     <img
-                      src={item.thumbnailUrl || "/assets/logos/Logo.svg"}
-                      alt={item.companyName}
-                      width="70"
-                      height="70"
-                      style={{ objectFit: "contain" }}
+                      src="/assets/icons/note-favorite-orange.svg"
+                      width="24"
+                      height="24"
+                      alt=""
                     />
-                    <div>
-                      <p className="fw-semibold mb-1">{item.companyName}</p>
-                      <p className="small mb-0">Job listing</p>
-                    </div>
-                  </div>
-                  <hr style={{ borderColor: "#E8E4F8" }} />
-                  <p className="fw-bold fs-5 mb-0">{item.name}</p>
-                  <div className="d-flex flex-column gap-2">
-                    <span>{item.type}</span>
-                    <span>Guaranteed</span>
-                    <span>{item.location}</span>
-                  </div>
-                  <hr style={{ borderColor: "#E8E4F8" }} />
-                  <div className="d-flex align-items-center justify-content-between">
-                    <span className="fw-bold">
-                      Rp {item.salary.toLocaleString("id-ID")}/mo
+                    <span style={{ fontSize: "14px", color: "#333" }}>
+                      {job.type}
                     </span>
-                    <Link
-                      to={`/jobs/${item.slug}`}
-                      className="btn rounded-pill px-4 py-2 text-white fw-semibold"
-                      style={{ backgroundColor: "#FF6B2C" }}
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <img
+                      src="/assets/icons/personalcard-yellow.svg"
+                      width="24"
+                      height="24"
+                      alt=""
+                    />
+                    <span style={{ fontSize: "14px", color: "#333" }}>
+                      {job.skillLevel}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <img
+                      src="/assets/icons/moneys-cyan.svg"
+                      width="24"
+                      height="24"
+                      alt=""
+                    />
+                    <span style={{ fontSize: "14px", color: "#333" }}>
+                      Rp {job.salary.toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <img
+                      src="/assets/icons/location-purple.svg"
+                      width="24"
+                      height="24"
+                      alt=""
+                    />
+                    <span style={{ fontSize: "14px", color: "#333" }}>
+                      {job.location}
+                    </span>
+                  </div>
+                </div>
+
+                <h5
+                  className="fw-bold mt-4"
+                  style={{ fontSize: "18px", color: "#0C0039" }}
+                >
+                  Overview
+                </h5>
+                <p
+                  className="text-muted"
+                  style={{ fontSize: "14px", lineHeight: "24px" }}
+                >
+                  {job.about}
+                </p>
+
+                <h5
+                  className="fw-bold mt-4"
+                  style={{ fontSize: "18px", color: "#0C0039" }}
+                >
+                  Responsibilities
+                </h5>
+                <ul className="list-unstyled">
+                  {job.responsibilities.map((item, index) => (
+                    <li
+                      key={index}
+                      className="d-flex align-items-center gap-2 mb-2 text-muted"
+                      style={{ fontSize: "14px" }}
                     >
-                      Details
-                    </Link>
+                      <img
+                        src="/assets/icons/tick-circle.svg"
+                        width="20"
+                        height="20"
+                        alt=""
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <h5
+                  className="fw-bold mt-4"
+                  style={{ fontSize: "18px", color: "#0C0039" }}
+                >
+                  Qualifications
+                </h5>
+                <ul className="list-unstyled">
+                  {job.qualifications.map((item, index) => (
+                    <li
+                      key={index}
+                      className="d-flex align-items-center gap-2 mb-2 text-muted"
+                      style={{ fontSize: "14px" }}
+                    >
+                      <img
+                        src="/assets/icons/tick-circle.svg"
+                        width="20"
+                        height="20"
+                        alt=""
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-5">
+                  <h5
+                    className="fw-bold mb-3"
+                    style={{ fontSize: "18px", color: "#0C0039" }}
+                  >
+                    Company
+                  </h5>
+                  <div className="bg-white py-2">
+                    <div className="d-flex align-items-center gap-3">
+                      <div
+                        className="rounded-3 d-flex align-items-center justify-content-center bg-light"
+                        style={{ width: 60, height: 60 }}
+                      >
+                        <img
+                          src="/assets/logos/Logo-black.svg"
+                          className="img-fluid"
+                          style={{
+                            maxWidth: "40px",
+                            maxHeight: "40px",
+                            objectFit: "contain",
+                          }}
+                          alt="Company Logo"
+                        />
+                      </div>
+                      <div>
+                        <div className="d-flex align-items-center gap-2">
+                          <h6
+                            className="fw-bold mb-0"
+                            style={{ fontSize: "16px", color: "#0C0039" }}
+                          >
+                            {job.companyName}
+                          </h6>
+                          <img
+                            src="/assets/icons/verify.svg"
+                            width="16"
+                            height="16"
+                            alt="verified"
+                          />
+                        </div>
+                        <small
+                          className="text-muted"
+                          style={{ fontSize: "13px" }}
+                        >
+                          12 Jobs Available
+                        </small>
+                      </div>
+                    </div>
+                    <p
+                      className="text-muted mt-3 mb-0"
+                      style={{ fontSize: "14px", lineHeight: "22px" }}
+                    >
+                      Grab adalah perusahaan teknologi terkemuka di Asia
+                      Tenggara yang menyediakan berbagai layanan berbasis
+                      aplikasi untuk memudahkan kebutuhan sehari-hari
+                      masyarakat. Grab dikenal sebagai super app karena
+                      mengintegrasikan banyak layanan dalam satu platform yang
+                      praktis dan mudah digunakan.
+                    </p>
+                  </div>
+                </div>
+
+                <hr className="my-4" />
+
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                  <small className="text-muted" style={{ fontSize: "13px" }}>
+                    🔒 We use Angga to secure your data
+                  </small>
+                  <div className="d-flex gap-2">
+                    {/* Dynamic Bookmark Button */}
+                    <button
+                      type="button"
+                      className={`btn rounded-pill px-4 ${
+                        isBookmarked
+                          ? "btn-secondary text-white"
+                          : "btn-outline-secondary text-dark"
+                      }`}
+                      disabled={isAdding || isDeleting}
+                      onClick={() => void handleToggleBookmark()}
+                      style={{
+                        fontSize: "14px",
+                        borderColor: isBookmarked ? "transparent" : "#ddd",
+                      }}
+                    >
+                      {isAdding || isDeleting
+                        ? "Loading..."
+                        : isBookmarked
+                          ? "Saved"
+                          : "Bookmark"}
+                    </button>
+
+                    {job.isOpen ? (
+                      <Link
+                        to={`/jobs/${job.slug}/apply`}
+                        className="btn text-white rounded-pill px-4 fw-semibold"
+                        style={{ backgroundColor: "#FF6B35", fontSize: "14px" }}
+                      >
+                        Apply Now
+                      </Link>
+                    ) : (
+                      <span
+                        className="btn btn-secondary rounded-pill px-4"
+                        style={{ fontSize: "14px" }}
+                      >
+                        Closed
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </section>
-      )}
-    </main>
+
+        {/* Section Related Jobs */}
+        {job.relatedJobs.length > 0 && (
+          <section
+            className="my-5 container position-relative"
+            style={{ zIndex: 1, maxWidth: 1130 }}
+          >
+            <h2
+              className="fw-bold mb-4 text-white"
+              style={{ fontSize: "28px", lineHeight: "36px" }}
+            >
+              Other Jobs You <br />
+              Might Interested
+            </h2>
+            <div className="row g-4">
+              {job.relatedJobs.map((item) => (
+                <div
+                  key={item.id}
+                  className="col-12 col-sm-6 col-md-4 col-lg-3"
+                >
+                  <JobCard job={item} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+    </>
   );
 }

@@ -1,5 +1,4 @@
 import { Link } from "react-router";
-import AppHeader from "../../app/layout/AppHeader";
 import { useGetMineQuery } from "./applicationApi";
 
 export default function MyApplicationsPage() {
@@ -10,7 +9,6 @@ export default function MyApplicationsPage() {
       className="min-vh-100 bg-light"
       style={{ fontFamily: "Poppins, sans-serif" }}
     >
-      <AppHeader title="Manage Job Applications" />
       <main className="py-5">
         <div className="container" style={{ maxWidth: 1140 }}>
           <div className="card border-0 shadow-sm" style={{ borderRadius: 8 }}>

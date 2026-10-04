@@ -1,5 +1,4 @@
 import { useState } from "react";
-import AppHeader from "../../app/layout/AppHeader";
 import { toast } from "react-toastify";
 import {
   useChangePasswordMutation,
@@ -78,7 +77,6 @@ export default function ProfilePage() {
       className="min-vh-100 bg-light"
       style={{ fontFamily: "Poppins, sans-serif" }}
     >
-      <AppHeader title="Profile" />
       <main className="py-5">
         <div className="container" style={{ maxWidth: 1140 }}>
           <div className="row g-4">

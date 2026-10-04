@@ -1,124 +1,120 @@
-import AppHeader from "../../app/layout/AppHeader";
-import { useParams } from "react-router";
-import { useGetJobApplicationsQuery, useHireMutation } from "./applicationApi";
+import { Link, useParams } from "react-router";
 import { toast } from "react-toastify";
+import { useGetJobApplicationsQuery, useHireMutation } from "./applicationApi";
 
 export default function CandidatesPage() {
-  const { jobId } = useParams();
+  const { jobId = "" } = useParams();
   const id = Number(jobId);
-  const { data: candidates = [] } = useGetJobApplicationsQuery(id, {
-    skip: !Number.isInteger(id),
-  });
-  const [hire] = useHireMutation();
 
-  const handleHire = async (candidateId: number) => {
+  const { data = [], isLoading } = useGetJobApplicationsQuery(id, {
+    skip: !id,
+  });
+
+  const [hire, { isLoading: hiring }] = useHireMutation();
+
+  const handleHire = async (applicationId: number) => {
+    const confirmed = window.confirm(
+      "Hire this candidate? The job will be closed automatically.",
+    );
+
+    if (!confirmed) return;
+
     try {
-      await hire(candidateId).unwrap();
+      await hire(applicationId).unwrap();
       toast.success("Candidate hired successfully.");
-    } catch (error) {
-      console.error("Hire failed:", error);
+    } catch {
       toast.error("Failed to hire candidate.");
     }
   };
 
-  return (
-    <div
-      className="min-vh-100 bg-light"
-      style={{ fontFamily: "Poppins, sans-serif" }}
-    >
-      <AppHeader title="Candidates" />
-      <main className="py-5">
-        <div className="container" style={{ maxWidth: 1140 }}>
-          <div className="card border-0 shadow-sm" style={{ borderRadius: 8 }}>
-            <div className="card-body p-4 p-lg-5">
-              <div className="d-flex align-items-center justify-content-between mb-4">
-                <h1 className="h4 fw-bold mb-0" style={{ color: "#1e1b4b" }}>
-                  Candidates
-                </h1>
-                <span className="text-secondary small">
-                  {candidates.length} candidates
-                </span>
-              </div>
+  const downloadResume = (resumeUrl: string) => {
+    window.open(resumeUrl, "_blank", "noopener,noreferrer");
+  };
 
-              {candidates.length === 0 ? (
-                <div className="alert alert-light border">
-                  No candidates found.
-                </div>
-              ) : (
-                <div className="d-flex flex-column gap-3">
-                  {candidates.map((candidate) => (
-                    <div key={candidate.id} className="border-bottom pb-3">
-                      <div className="row align-items-center g-3">
-                        <div className="col-12 col-lg-6">
-                          <div className="d-flex align-items-center gap-3">
-                            <div
-                              className="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                              style={{ width: 64, height: 64 }}
-                            >
-                              <img
-                                src="/assets/icons/user.svg"
-                                alt=""
-                                width="32"
-                                height="32"
-                              />
-                            </div>
-                            <div>
-                              <h2
-                                className="h6 fw-bold mb-1"
-                                style={{ color: "#1e1b4b" }}
-                              >
-                                {candidate.candidateName}
-                              </h2>
-                              <p className="text-secondary small mb-0">
-                                {candidate.candidateId}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="col-12 col-lg-3">
-                          <div className="small text-secondary mb-1">
-                            Status
-                          </div>
-                          <span
-                            className="badge rounded-pill px-3 py-2"
-                            style={{
-                              backgroundColor: candidate.isHired
-                                ? "#22C55E"
-                                : "#F97316",
-                            }}
-                          >
-                            {candidate.isHired ? "HIRED" : "WAITING"}
-                          </span>
-                        </div>
-                        <div className="col-12 col-lg-3 d-flex justify-content-lg-end flex-wrap gap-2">
-                          <a
-                            href={candidate.resumeUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="btn btn-outline-primary rounded-pill"
+  if (isLoading) {
+    return <div className="container py-5">Loading candidates...</div>;
+  }
+
+  return (
+    <div className="min-vh-100 bg-light">
+      <main className="container py-4">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h4 className="mb-1">Candidates</h4>
+            <p className="text-secondary mb-0">
+              Candidate applications for this job.
+            </p>
+          </div>
+
+          <Link to="/manage/jobs" className="btn btn-outline-secondary">
+            Back
+          </Link>
+        </div>
+
+        {data.length === 0 ? (
+          <div className="alert alert-light border">No candidates found.</div>
+        ) : (
+          <div className="table-responsive">
+            <table className="table table-bordered align-middle bg-white">
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Job</th>
+                  <th>Company</th>
+                  <th>Message</th>
+                  <th>Applied At</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {data.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.candidateName}</td>
+                    <td>{item.jobName}</td>
+                    <td>{item.companyName}</td>
+                    <td>{item.message || "-"}</td>
+                    <td>
+                      {new Date(item.createdAt).toLocaleDateString("id-ID")}
+                    </td>
+                    <td>
+                      {item.isHired ? (
+                        <span className="badge text-bg-success">Hired</span>
+                      ) : (
+                        <span className="badge text-bg-warning">Pending</span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="d-flex gap-2">
+                        {item.resumeUrl && (
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => downloadResume(item.resumeUrl)}
                           >
                             Resume
-                          </a>
-                          {!candidate.isHired && (
-                            <button
-                              type="button"
-                              className="btn rounded-pill text-white fw-bold"
-                              style={{ backgroundColor: "#4338CA" }}
-                              onClick={() => void handleHire(candidate.id)}
-                            >
-                              Hire
-                            </button>
-                          )}
-                        </div>
+                          </button>
+                        )}
+
+                        {!item.isHired && (
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            disabled={hiring}
+                            onClick={() => void handleHire(item.id)}
+                          >
+                            Hire
+                          </button>
+                        )}
                       </div>
-                      <p className="mt-3 mb-0">{candidate.message}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

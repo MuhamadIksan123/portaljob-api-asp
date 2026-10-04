@@ -15,6 +15,7 @@ export interface Job extends JobSummary {
   categoryId: number;
   about: string;
   skillLevel: string;
+  createdAt: string | null;
   categoryName: string;
   responsibilities: string[];
   qualifications: string[];

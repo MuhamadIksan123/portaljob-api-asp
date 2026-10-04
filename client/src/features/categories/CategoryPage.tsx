@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import AppHeader from "../../app/layout/AppHeader";
 import type { Category } from "../../app/models/category";
 import {
   useCreateCategoryMutation,
@@ -8,8 +7,6 @@ import {
   useGetCategoriesQuery,
   useUpdateCategoryMutation,
 } from "./categoryApi";
-import { useNavigate } from "react-router";
-import { useLogoutMutation } from "../account/accountApi";
 import { toast } from "react-toastify";
 
 export default function CategoryPage() {
@@ -73,36 +70,11 @@ export default function CategoryPage() {
     }
   };
 
-  const navigate = useNavigate();
-  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
-
-  const handleLogout = async () => {
-    try {
-      await logout().unwrap();
-      toast.success("Logged out successfully.");
-      navigate("/login");
-    } catch (error) {
-      console.error(error);
-      toast.error("Logout failed.");
-    }
-  };
-
   return (
-    <div className="min-vh-100 bg-light" style={{ fontFamily: "Poppins, sans-serif" }}>
-      <AppHeader
-        title="Manage Categories"
-        actions={
-          <button
-            type="button"
-            className="btn btn-outline-dark rounded-pill"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-          >
-            {isLoggingOut ? "Logging Out..." : "Logout"}
-          </button>
-        }
-      />
-
+    <div
+      className="min-vh-100 bg-light"
+      style={{ fontFamily: "Poppins, sans-serif" }}
+    >
       <main className="py-5">
         <div className="container" style={{ maxWidth: 1140 }}>
           <div className="card border-0 shadow-sm" style={{ borderRadius: 8 }}>
@@ -112,7 +84,9 @@ export default function CategoryPage() {
                   <h1 className="h3 mb-1 fw-bold" style={{ color: "#1e1b4b" }}>
                     Manage Categories
                   </h1>
-                  <p className="text-secondary mb-0">Kelola kategori pekerjaan.</p>
+                  <p className="text-secondary mb-0">
+                    Kelola kategori pekerjaan.
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -124,10 +98,14 @@ export default function CategoryPage() {
                 </button>
               </div>
 
-              {isLoading && <div className="alert alert-light border">Loading...</div>}
+              {isLoading && (
+                <div className="alert alert-light border">Loading...</div>
+              )}
 
               {!isLoading && data.length === 0 && (
-                <div className="alert alert-light border mb-0">Data belum tersedia</div>
+                <div className="alert alert-light border mb-0">
+                  Data belum tersedia
+                </div>
               )}
 
               <div className="d-flex flex-column gap-3">
@@ -149,21 +127,29 @@ export default function CategoryPage() {
                             style={{ objectFit: "cover" }}
                           />
                           <div>
-                            <h2 className="h5 mb-1 fw-bold" style={{ color: "#1e1b4b" }}>
+                            <h2
+                              className="h5 mb-1 fw-bold"
+                              style={{ color: "#1e1b4b" }}
+                            >
                               {category.name}
                             </h2>
-                            <div className="small text-secondary">{category.slug}</div>
+                            <div className="small text-secondary">
+                              {category.slug}
+                            </div>
                           </div>
                         </div>
                       </div>
                       <div className="col-12 col-md-3">
                         <div className="small text-secondary">Date</div>
                         <div className="fw-bold" style={{ color: "#1e1b4b" }}>
-                          {new Date(category.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "2-digit",
-                            year: "numeric",
-                          })}
+                          {new Date(category.createdAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "2-digit",
+                              year: "numeric",
+                            },
+                          )}
                         </div>
                       </div>
                       <div className="col-12 col-md-3">
@@ -203,7 +189,12 @@ export default function CategoryPage() {
 
       {open && (
         <>
-          <div className="modal d-block" tabIndex={-1} role="dialog" aria-modal="true">
+          <div
+            className="modal d-block"
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+          >
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">
@@ -219,7 +210,10 @@ export default function CategoryPage() {
                 </div>
                 <div className="modal-body p-4">
                   <div className="mb-3">
-                    <label className="form-label fw-semibold" htmlFor="category-name">
+                    <label
+                      className="form-label fw-semibold"
+                      htmlFor="category-name"
+                    >
                       Name
                     </label>
                     <input
@@ -231,7 +225,10 @@ export default function CategoryPage() {
                     />
                   </div>
                   <div>
-                    <label className="form-label fw-semibold" htmlFor="category-icon">
+                    <label
+                      className="form-label fw-semibold"
+                      htmlFor="category-icon"
+                    >
                       icon
                     </label>
                     <input
@@ -239,12 +236,18 @@ export default function CategoryPage() {
                       type="file"
                       className="form-control"
                       accept=".jpg,.jpeg,.png"
-                      onChange={(event) => setIcon(event.target.files?.[0] ?? null)}
+                      onChange={(event) =>
+                        setIcon(event.target.files?.[0] ?? null)
+                      }
                     />
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-light" onClick={() => setOpen(false)}>
+                  <button
+                    type="button"
+                    className="btn btn-light"
+                    onClick={() => setOpen(false)}
+                  >
                     Cancel
                   </button>
                   <button

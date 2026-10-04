@@ -1,5 +1,4 @@
 import { useParams } from "react-router";
-import AppHeader from "../../app/layout/AppHeader";
 import { useGetMineByIdQuery } from "./applicationApi";
 
 export default function MyApplicationDetailPage() {
@@ -27,7 +26,6 @@ export default function MyApplicationDetailPage() {
       className="min-vh-100 bg-light"
       style={{ fontFamily: "Poppins, sans-serif" }}
     >
-      <AppHeader title="Candidate Details" />
       <main className="py-5">
         <div className="container" style={{ maxWidth: 960 }}>
           <div className="card border-0 shadow-sm" style={{ borderRadius: 8 }}>
